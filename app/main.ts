@@ -1,7 +1,10 @@
 import * as net from 'net';
+import { HttpResponse } from './http/model/http.response';
 
 const server = net.createServer((socket) => {
-    socket.end();
+    console.log('Connection received')
+    socket.write(new HttpResponse(200).send())
+    socket.end()
 });
 
 console.log("Starting HTTP server");
