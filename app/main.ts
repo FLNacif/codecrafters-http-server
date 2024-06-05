@@ -1,10 +1,25 @@
 import * as net from 'net';
 import { HttpResponse } from './http/model/http.response';
+import { HttpRequest } from './http/model/http.request';
+import { Router } from './router/router';
+import { HttpStatusCode } from './http/model/http.statusCode';
+
+Router.onGet('/', () => {
+    return new HttpResponse(HttpStatusCode.OK)
+})
 
 const server = net.createServer((socket) => {
     console.log('Connection received')
-    socket.write(new HttpResponse(200).send())
-    socket.end()
+    socket.setEncoding('utf8')
+
+    socket.on('data', (data: string) => {
+        console.log(`Received data\n ${data}`)
+        const request = new HttpRequest(data)
+        const response = Router.route(request)
+        socket.write(response.send())
+        socket.end()
+    })
+    
 });
 
 console.log("Starting HTTP server");

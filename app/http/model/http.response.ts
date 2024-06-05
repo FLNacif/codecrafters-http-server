@@ -1,11 +1,11 @@
-import { StatusCode } from "./http.statusCode";
+import { HttpStatusCode } from "./http.statusCode";
 
 export class HttpResponse {
-    constructor(private statusCode: StatusCode, private headers?: Map<string, string>, private body?: any){
+    constructor(private statusCode: HttpStatusCode, private headers?: Map<string, string>, private body?: any){
     }
 
     private getStatus(): string {
-        return `HTTP/1.1 ${this.statusCode} ${StatusCode.getReasonPhrase(this.statusCode)}\r\n`
+        return `HTTP/1.1 ${this.statusCode} ${HttpStatusCode.getReasonPhrase(this.statusCode)}\r\n`
     }
 
     private getHeaders() {
@@ -17,7 +17,7 @@ export class HttpResponse {
             return this.body
         }
         if (this.body == null) return ''
-        
+
         return JSON.stringify(this.body)
     }
 

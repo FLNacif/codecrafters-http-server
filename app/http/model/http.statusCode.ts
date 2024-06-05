@@ -1,9 +1,10 @@
-export enum StatusCode {
+export enum HttpStatusCode {
     OK = 200,
+    Not_Found = 404
 }
 
-export namespace StatusCode {
-    export function getReasonPhrase(statusCode: StatusCode): string {
-        return StatusCode[statusCode];
+export namespace HttpStatusCode {
+    export function getReasonPhrase(statusCode: HttpStatusCode): string {
+        return HttpStatusCode[statusCode].replace('_',' ');
     }
 }
