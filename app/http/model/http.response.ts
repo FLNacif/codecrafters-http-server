@@ -1,15 +1,19 @@
 import { HttpStatusCode } from "./http.statusCode";
 
 export class HttpResponse {
-    constructor(private statusCode: HttpStatusCode, private headers?: Map<string, string>, private body?: any){
+    constructor(private statusCode: HttpStatusCode, private headers?: { [key: string]: string | number }, private body?: any){
     }
 
     private getStatus(): string {
-        return `HTTP/1.1 ${this.statusCode} ${HttpStatusCode.getReasonPhrase(this.statusCode)}\r\n`
+        return `HTTP/1.1 ${this.statusCode} ${HttpStatusCode.getReasonPhrase(this.statusCode)}`
     }
 
     private getHeaders() {
-        return `\r\n`
+        let headerString = ""
+        for (let header in this.headers) {
+            headerString = headerString+`${header}: ${this.headers[header]}\r\n`
+        }
+        return headerString
     }
 
     private getBody() {

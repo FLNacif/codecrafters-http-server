@@ -8,6 +8,11 @@ Router.onGet('/', () => {
     return new HttpResponse(HttpStatusCode.OK)
 })
 
+Router.onGet('/echo/[a-zA-Z0-9]+', (request: HttpRequest) => {
+    const echo = request.path.split('/')[2]
+    return new HttpResponse(200, {'Content-Type': 'text/plain', 'Content-Length': echo.length}, echo)
+})
+
 const server = net.createServer((socket) => {
     console.log('Connection received')
     socket.setEncoding('utf8')
