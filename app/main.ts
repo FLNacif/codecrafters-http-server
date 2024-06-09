@@ -8,8 +8,8 @@ Router.onGet('/', () => {
     return new HttpResponse(HttpStatusCode.OK)
 })
 
-Router.onGet('/echo/[a-zA-Z0-9]+', (request: HttpRequest) => {
-    const echo = request.path.split('/')[2]
+Router.onGet('/echo/{echo}', (request: HttpRequest) => {
+    const echo = request.getPathVariables('echo')
     return new HttpResponse(200, {'Content-Type': 'text/plain', 'Content-Length': echo.length}, echo)
 })
 
@@ -18,7 +18,7 @@ const server = net.createServer((socket) => {
     socket.setEncoding('utf8')
 
     socket.on('data', (data: string) => {
-        console.log(`Received data\n ${data}`)
+        // console.log(`Received data\n ${data}`)
         const request = new HttpRequest(data)
         const response = Router.route(request)
         socket.write(response.send())
