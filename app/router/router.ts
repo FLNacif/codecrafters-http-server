@@ -11,8 +11,13 @@ export class Router {
         Router.on(HttpMethod.GET, incommingPath, handler)
     }
 
+    static onPost(incommingPath: string, handler: (request: HttpRequest) => HttpResponse) {
+        Router.on(HttpMethod.POST, incommingPath, handler)
+    }
+
+
     static on(method: HttpMethod, incommingPath: string, handler: (request: HttpRequest) => HttpResponse) {
-        let routeToController = this.controllers.find((controller) => Router.match(incommingPath, controller.path))
+        let routeToController = this.controllers.find((controller) => Router.match({ method, path: incommingPath }, { method: controller.method, path: controller.path }))
         
         if(!routeToController) { 
             Router.controllers.push({ path: incommingPath, method, handler })
@@ -22,7 +27,7 @@ export class Router {
     }
 
     static route(request: HttpRequest): HttpResponse {
-        const routeToController = this.controllers.find((controller) => Router.match(request.path, controller.path))
+        const routeToController = this.controllers.find((controller) => Router.match(request, controller))
         if (routeToController) {
             const variables: {[key: string]: string} = Router.extractVariables(request.path, routeToController.path)
             request.setPathVariables(variables)
@@ -32,9 +37,10 @@ export class Router {
         }
     }
 
-    private static match(incomingPath: string, controllerPath: string): boolean {
-        const incomingPathSplitted = Router.splitPath(incomingPath)
-        const controllerPathSplitted = Router.splitPath(controllerPath)
+    private static match(incomingPath: { method: HttpMethod, path: string }, controllerPath: { method: HttpMethod, path: string }): boolean {
+        if (incomingPath.method != controllerPath.method) return false
+        const incomingPathSplitted = Router.splitPath(incomingPath.path)
+        const controllerPathSplitted = Router.splitPath(controllerPath.path)
 
         for(let i = 0; i< incomingPathSplitted.length; i++) {
             if (i >= controllerPathSplitted.length) return false
