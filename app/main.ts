@@ -8,6 +8,11 @@ Router.onGet('/', () => {
     return new HttpResponse(HttpStatusCode.OK)
 })
 
+Router.onGet('/user-agent', (request: HttpRequest) => {
+    const userAgent = request.headers['User-Agent']
+    return new HttpResponse(200, {'Content-Type': 'text/plain', 'Content-Length': userAgent.length}, userAgent)
+})
+
 Router.onGet('/echo/{echo}', (request: HttpRequest) => {
     const echo = request.getPathVariables('echo')
     return new HttpResponse(200, {'Content-Type': 'text/plain', 'Content-Length': echo.length}, echo)

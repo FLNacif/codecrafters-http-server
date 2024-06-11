@@ -4,15 +4,48 @@ export class HttpRequest {
     public readonly action: HttpMethod
     public readonly path: string
     public readonly httpVersion: string
+    public readonly headers: { [key: string]: string } = {}
     private incomingVariables: { [key: string]: string } = {}
 
     constructor(data: string){
         const lines = data.split('\r\n')
-        const requestLine = lines[0].split(' ')
 
-        this.action = HttpMethod.getVerb(requestLine[0])
-        this.path = requestLine[1]
-        this.httpVersion = requestLine[2]
+        const requestLine = this.parseRequestLineInfo(lines[0])
+        this.action = requestLine.action
+        this.path = requestLine.path
+        this.httpVersion = requestLine.httpVersion
+
+        this.headers = this.parseHeaders(lines.slice(1))
+    }
+
+    private parseHeaders(lines: string[]) {
+        const headers: any = {}
+        for(let i = 0; i < lines.length; i++) {
+            if(lines[i] == '') break
+            const headerDividerIndex = this.findFirstColon(lines[i])
+            if(headerDividerIndex === -1) throw new Error(`Failed to parse header line ${lines[i]}`)
+            const headerName = lines[i].slice(0, headerDividerIndex)
+            const headerValue = lines[i].slice(headerDividerIndex+1).trim()
+            headers[headerName] = headerValue
+        }
+        return headers
+    }
+    
+    private findFirstColon(line: string): number {
+        for(let i = 0; i < line.length; i++) {
+            if(line.charAt(i) == ':')
+                return i
+        }
+        return -1
+    }
+
+    private parseRequestLineInfo(line: string){
+        const requestLine = line.split(' ')
+        const action = HttpMethod.getVerb(requestLine[0])
+        const path = requestLine[1]
+        const httpVersion = requestLine[2]
+        
+        return { action, path, httpVersion }
     }
 
     public setPathVariables(variables: {[key: string]: string}) {
