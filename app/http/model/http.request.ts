@@ -1,26 +1,32 @@
 import { HttpMethod } from "./http.method"
 
 export class HttpRequest {
-    public readonly action: HttpMethod
+    public readonly method: HttpMethod
     public readonly path: string
     public readonly httpVersion: string
     public readonly headers: { [key: string]: string } = {}
+    public readonly body: any
     private incomingVariables: { [key: string]: string } = {}
 
     constructor(data: string){
         const lines = data.split('\r\n')
 
         const requestLine = this.parseRequestLineInfo(lines[0])
-        this.action = requestLine.action
+        this.method = requestLine.action
         this.path = requestLine.path
         this.httpVersion = requestLine.httpVersion
 
-        this.headers = this.parseHeaders(lines.slice(1))
+        this.headers = this.parseHeaders(lines)
+        this.body = this.parseBody(lines)
+    }
+
+    private parseBody(lines: string[]) {
+        return lines[lines.length - 1]
     }
 
     private parseHeaders(lines: string[]) {
         const headers: any = {}
-        for(let i = 0; i < lines.length; i++) {
+        for(let i = 1; i < lines.length; i++) {
             if(lines[i] == '') break
             const headerDividerIndex = this.findFirstColon(lines[i])
             if(headerDividerIndex === -1) throw new Error(`Failed to parse header line ${lines[i]}`)

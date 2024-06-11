@@ -1,5 +1,6 @@
 export enum HttpStatusCode {
     OK = 200,
+    Created = 201,
     Not_Found = 404
 }
 
