@@ -3,6 +3,7 @@ import { HttpResponse } from './http/model/http.response';
 import { HttpRequest } from './http/model/http.request';
 import { Router } from './router/router';
 import { HttpStatusCode } from './http/model/http.statusCode';
+import { readdirSync, readFileSync } from 'fs'
 
 Router.onGet('/', () => {
     return new HttpResponse(HttpStatusCode.OK)
@@ -11,6 +12,14 @@ Router.onGet('/', () => {
 Router.onGet('/user-agent', (request: HttpRequest) => {
     const userAgent = request.headers['User-Agent']
     return new HttpResponse(200, {'Content-Type': 'text/plain', 'Content-Length': userAgent.length}, userAgent)
+})
+
+Router.onGet('/files/{filename}', (request: HttpRequest) => {
+    const filename = request.getPathVariables('filename')
+    const directory = process.argv[process.argv.findIndex((arg) => arg == '--directory') + 1]
+    if (!readdirSync(directory).includes(filename)) return new HttpResponse(HttpStatusCode.Not_Found)
+    const file = readFileSync(`${directory}/${filename}`, { encoding: 'utf8' })
+    return new HttpResponse(200, {'Content-Type': 'application/octet-stream', 'Content-Length': file.length}, file)
 })
 
 Router.onGet('/echo/{echo}', (request: HttpRequest) => {
