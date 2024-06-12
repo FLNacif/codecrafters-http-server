@@ -1,13 +1,28 @@
-import { HttpHeaders } from "./http.headers";
+import { HttpHeader, HttpHeaders } from "./http.headers";
 import { HttpStatusCode } from "./http.statusCode";
 
 export class HttpResponse {
-    constructor(private statusCode: HttpStatusCode, private headers: { [key: string]: string | number } = {}, private body: any = ''){
+    constructor(private statusCode: HttpStatusCode = 200, private headers: HttpHeader = {}, private body: any = ''){
         this.headers[HttpHeaders.Content_Length] = body.length
     }
 
     private getStatus(): string {
         return `HTTP/1.1 ${this.statusCode} ${HttpStatusCode.getReasonPhrase(this.statusCode)}`
+    }
+
+    public setStatus(status: HttpStatusCode) {
+        this.statusCode = status
+        return this
+    }
+
+    public setBody(body: any) {
+        this.body = body
+        return this
+    }
+
+    public setHeaders(headers: HttpHeader) {
+        this.headers = headers
+        return this
     }
 
     private getHeaders() {

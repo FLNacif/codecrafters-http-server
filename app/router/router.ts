@@ -7,16 +7,16 @@ import { Controller } from "../model/controller";
 export class Router {
     static controllers: Controller[] = []
 
-    static onGet(incommingPath: string, handler: (request: HttpRequest) => HttpResponse) {
+    static onGet(incommingPath: string, handler: (request: HttpRequest, response: HttpResponse) => HttpResponse) {
         Router.on(HttpMethod.GET, incommingPath, handler)
     }
 
-    static onPost(incommingPath: string, handler: (request: HttpRequest) => HttpResponse) {
+    static onPost(incommingPath: string, handler: (request: HttpRequest, response: HttpResponse) => HttpResponse) {
         Router.on(HttpMethod.POST, incommingPath, handler)
     }
 
 
-    static on(method: HttpMethod, incommingPath: string, handler: (request: HttpRequest) => HttpResponse) {
+    static on(method: HttpMethod, incommingPath: string, handler: (request: HttpRequest, response: HttpResponse) => HttpResponse) {
         let routeToController = this.controllers.find((controller) => Router.match({ method, path: incommingPath }, { method: controller.method, path: controller.path }))
         
         if(!routeToController) { 
@@ -31,7 +31,12 @@ export class Router {
         if (routeToController) {
             const variables: {[key: string]: string} = Router.extractVariables(request.path, routeToController.path)
             request.setPathVariables(variables)
-            return routeToController.handler(request)
+            const response = new HttpResponse()
+            try {
+                return routeToController.handler(request, response)
+            } catch (e) {
+                return response.setStatus(HttpStatusCode.Internal_Server_Error).setBody(e)
+            }
         } else {
             return new HttpResponse(HttpStatusCode.Not_Found)
         }
