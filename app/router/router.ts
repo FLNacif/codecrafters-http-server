@@ -1,3 +1,4 @@
+import { ChooseCompression } from "../http/compression/choose-compression";
 import { HttpMethod } from "../http/model/http.method";
 import { HttpRequest } from "../http/model/http.request";
 import { HttpResponse } from "../http/model/http.response";
@@ -32,6 +33,7 @@ export class Router {
             const variables: {[key: string]: string} = Router.extractVariables(request.path, routeToController.path)
             request.setPathVariables(variables)
             const response = new HttpResponse()
+            ChooseCompression.choose(request, response)
             try {
                 return routeToController.handler(request, response)
             } catch (e) {

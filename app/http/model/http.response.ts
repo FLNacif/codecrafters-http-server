@@ -17,11 +17,16 @@ export class HttpResponse {
 
     public setBody(body: any) {
         this.body = body
+        this.headers[HttpHeaders.Content_Length] = body.length
         return this
     }
 
+    public setHeader(header: HttpHeaders, value: string | number) {
+        this.headers[header] = value
+    }
+
     public setHeaders(headers: HttpHeader) {
-        this.headers = headers
+        this.headers = { ...this.headers, ...headers }
         return this
     }
 
