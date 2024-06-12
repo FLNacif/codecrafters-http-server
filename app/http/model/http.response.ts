@@ -1,3 +1,5 @@
+import { NetConnectOpts, Socket } from "net";
+import { CompressionFactory } from "../compression/compression-factory";
 import { HttpHeader, HttpHeaders } from "./http.headers";
 import { HttpStatusCode } from "./http.statusCode";
 
@@ -16,8 +18,8 @@ export class HttpResponse {
     }
 
     public setBody(body: any) {
+        if (!body) body = ''
         this.body = body
-        this.headers[HttpHeaders.Content_Length] = body.length
         return this
     }
 
@@ -38,19 +40,26 @@ export class HttpResponse {
         return headerString
     }
 
-    private getBody() {
-        if (typeof this.body === 'string') {
-            return this.body
+    private getBody(): Buffer {
+        let returnedBody
+        if (this.headers[HttpHeaders.Content_Encodding]) {
+            returnedBody = CompressionFactory.encoding(this.headers[HttpHeaders.Content_Encodding] as string, this.body)
+        } else {
+            returnedBody = Buffer.from(this.body)
         }
-        if (this.body == null) return ''
-
-        return JSON.stringify(this.body)
+        
+        this.setHeader(HttpHeaders.Content_Length, returnedBody.length)
+        return returnedBody
     }
 
-    public send(): string {
-        return  `${this.getStatus()}\r\n` +
-                `${this.getHeaders()}\r\n` +
-                `${this.getBody()}`
+    public send(socket: Socket) {
+        const body = this.getBody()
+        const status = this.getStatus()
+        const headers = this.getHeaders()
+
+        socket.write(`${status}\r\n` +
+                `${headers}\r\n`)
+        socket.write(body)
     }
 
 }

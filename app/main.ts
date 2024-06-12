@@ -54,7 +54,7 @@ const server = net.createServer((socket) => {
     socket.on('data', (data: string) => {
         const request = new HttpRequest(data)
         const response = Router.route(request)
-        socket.write(response.send())
+        response.send(socket)
         socket.end()
     })
     

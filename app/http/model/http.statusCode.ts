@@ -7,6 +7,6 @@ export enum HttpStatusCode {
 
 export namespace HttpStatusCode {
     export function getReasonPhrase(statusCode: HttpStatusCode): string {
-        return HttpStatusCode[statusCode].replace('_',' ');
+        return HttpStatusCode[statusCode].replace(/_/g,' ');
     }
 }

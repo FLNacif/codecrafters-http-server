@@ -1,3 +1,4 @@
+import { DeflateCompression } from "./deflate";
 import { GzipCompression } from "./gzip";
 
-export const supportedCompressions = [GzipCompression.algorithm]
+export const supportedCompressions = [DeflateCompression.algorithm, GzipCompression.algorithm]
