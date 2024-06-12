@@ -1,7 +1,9 @@
+import { HttpHeaders } from "./http.headers";
 import { HttpStatusCode } from "./http.statusCode";
 
 export class HttpResponse {
-    constructor(private statusCode: HttpStatusCode, private headers?: { [key: string]: string | number }, private body?: any){
+    constructor(private statusCode: HttpStatusCode, private headers: { [key: string]: string | number } = {}, private body: any = ''){
+        this.headers[HttpHeaders.Content_Length] = body.length
     }
 
     private getStatus(): string {

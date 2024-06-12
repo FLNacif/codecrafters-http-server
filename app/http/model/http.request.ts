@@ -30,7 +30,7 @@ export class HttpRequest {
             if(lines[i] == '') break
             const headerDividerIndex = this.findFirstColon(lines[i])
             if(headerDividerIndex === -1) throw new Error(`Failed to parse header line ${lines[i]}`)
-            const headerName = lines[i].slice(0, headerDividerIndex)
+            const headerName = lines[i].slice(0, headerDividerIndex).toLowerCase()
             const headerValue = lines[i].slice(headerDividerIndex+1).trim()
             headers[headerName] = headerValue
         }

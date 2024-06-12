@@ -4,14 +4,18 @@ import { HttpRequest } from './http/model/http.request';
 import { Router } from './router/router';
 import { HttpStatusCode } from './http/model/http.statusCode';
 import { readdirSync, readFileSync, writeFileSync } from 'fs'
+import { supportedCompressions } from './http/compression';
+import { HttpHeader, HttpHeaders } from './http/model/http.headers';
 
 Router.onGet('/', () => {
     return new HttpResponse(HttpStatusCode.OK)
 })
 
 Router.onGet('/user-agent', (request: HttpRequest) => {
-    const userAgent = request.headers['User-Agent']
-    return new HttpResponse(200, {'Content-Type': 'text/plain', 'Content-Length': userAgent.length}, userAgent)
+    const userAgent = request.headers[HttpHeaders.User_Agent]
+    const responseHeaders: HttpHeader = {}
+    responseHeaders[HttpHeaders.Content_Type] = 'text/plain'
+    return new HttpResponse(200, responseHeaders, userAgent)
 })
 
 Router.onGet('/files/{filename}', (request: HttpRequest) => {
@@ -19,7 +23,9 @@ Router.onGet('/files/{filename}', (request: HttpRequest) => {
     const directory = process.argv[process.argv.findIndex((arg) => arg == '--directory') + 1]
     if (!readdirSync(directory).includes(filename)) return new HttpResponse(HttpStatusCode.Not_Found)
     const file = readFileSync(`${directory}/${filename}`, { encoding: 'utf8' })
-    return new HttpResponse(200, {'Content-Type': 'application/octet-stream', 'Content-Length': file.length}, file)
+    const responseHeaders: HttpHeader = {}
+    responseHeaders[HttpHeaders.Content_Type] = 'application/octet-stream'
+    return new HttpResponse(200, responseHeaders, file)
 })
 
 Router.onPost('/files/{filename}', (request: HttpRequest) => {
@@ -27,13 +33,18 @@ Router.onPost('/files/{filename}', (request: HttpRequest) => {
     const directory = process.argv[process.argv.findIndex((arg) => arg == '--directory') + 1]
     
     writeFileSync(`${directory}/${filename}`, request.body)
-
-    return new HttpResponse(201, {'Content-Type': 'application/octet-stream', 'Content-Length': request.body}, request.body)
+    const responseHeaders: HttpHeader = {}
+    responseHeaders[HttpHeaders.Content_Type] = 'application/octet-stream'
+    return new HttpResponse(201, responseHeaders, request.body)
 })
 
 Router.onGet('/echo/{echo}', (request: HttpRequest) => {
     const echo = request.getPathVariables('echo')
-    return new HttpResponse(200, {'Content-Type': 'text/plain', 'Content-Length': echo.length}, echo)
+    const responseHeaders: HttpHeader = {}
+    if (supportedCompressions.includes(request.headers[HttpHeaders.Accept_Encodding]))
+        responseHeaders[HttpHeaders.Content_Encodding] = request.headers[HttpHeaders.Accept_Encodding]
+    responseHeaders[HttpHeaders.Content_Type] = 'text/plain'
+    return new HttpResponse(200, responseHeaders, echo)
 })
 
 const server = net.createServer((socket) => {
@@ -41,7 +52,6 @@ const server = net.createServer((socket) => {
     socket.setEncoding('utf8')
 
     socket.on('data', (data: string) => {
-        // console.log(`Received data\n ${data}`)
         const request = new HttpRequest(data)
         const response = Router.route(request)
         socket.write(response.send())
